@@ -1,7 +1,14 @@
-export const USER_ROLES = {
+export const USER_ROLES = Object.freeze({
     USER: 'user',
     ADMIN: 'admin',
     COURIER: 'courier',
+})
+
+export const PRODUCT_STATE = {
+  IN_STOCK: 'in_stock',
+  OUT_OF_STOCK: 'out_of_stock',
+  PRE_ORDER: 'pre_order',
+  DISCONTINUED: 'discontinued',
 }
 
 export const ORDER_STATUS = {
