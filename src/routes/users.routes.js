@@ -7,20 +7,10 @@ router.get("/", UserController.getUsers)
 
 router.get("/:id", UserController.getUserById)
 
-router.post("/", (req, res) => {
-    const { name, email } = req.body
-    res.send(`User created: ${name}, ${email}`)
-})
+router.post("/", UserController.createUser)
 
-router.patch("/:id", (req, res) => {
-    const { id } = req.params
-    const { name, email } = req.body
-    res.send(`User updated: ID ${id}, Name: ${name}, Email: ${email}`)
-})
+router.patch("/:id", UserController.updateUser)
 
-router.delete("/:id", (req, res) => {
-    const { id } = req.params
-    res.send(`User deleted: ID ${id}`)
-})
+router.delete("/:id", UserController.deleteUser)
 
 export default router

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { USER_ROLES } from "../utils/constants";
+import { USER_ROLES } from "../utils/constants.js";
 
 const userSchema = new mongoose.Schema({
     first_name: { type: String, required: true},

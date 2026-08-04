@@ -25,6 +25,24 @@ class UserRepository {
             UserRepository.#defaultProjection
         )
     }
+
+    static async create(userData) {
+        const user = await UserModel.create(userData)
+        const { password, __v, ...userWithoutSensitiveData } = user.toObject()
+        return userWithoutSensitiveData
+    }
+
+    static async updateById(id, userData) {
+        return await UserModel.findByIdAndUpdate(
+            id,
+            userData,
+            { new: true, runValidators: true }
+        ).select(UserRepository.#defaultProjection)
+    }
+
+     static async deleteById(id) {
+        return await UserModel.findByIdAndDelete(id)
+    }
 }
 
 export default UserRepository

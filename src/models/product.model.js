@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { PRODUCT_STATE } from "../utils/constants";
+import { PRODUCT_STATE } from "../utils/constants.js";
 
 const productSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
