@@ -23,6 +23,26 @@ class ProductService {
         }
         return product
     }
+
+    static async createProduct(data) {
+        return await ProductRepository.create(data)
+    }
+
+    static async updateProduct(id, data) {
+        const product = await ProductRepository.findByIdAndUpdate(id, data)
+        if (!product) {
+            throw new Error("Product not found")
+        }
+        return product
+    }
+
+    static async deleteProduct(id) {
+        const product = await ProductRepository.findByIdAndDelete(id)
+        if (!product) {
+            throw new Error("Product not found")
+        }
+        return product
+    }
 }
 
 export default ProductService

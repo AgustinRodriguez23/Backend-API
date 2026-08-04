@@ -18,12 +18,11 @@ const productSchema = new mongoose.Schema({
     timestamps: true
 })
 
-productSchema.pre('save', function (next) {
+productSchema.pre('save', function () {
     const manualStates = [PRODUCT_STATE.PRE_ORDER, PRODUCT_STATE.DISCONTINUED]
     if (!manualStates.includes(this.state)) {
         this.state = this.stock > 0 ? PRODUCT_STATE.IN_STOCK : PRODUCT_STATE.OUT_OF_STOCK
     }
-    next()
 })
 
 const ProductModel = mongoose.model('Product', productSchema)

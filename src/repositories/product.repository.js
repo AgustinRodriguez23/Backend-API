@@ -25,6 +25,23 @@ class ProductRepository {
             ProductRepository.#defaultProjection
         )
     }
+
+    static async create(data) {
+        const product = new ProductModel(data)
+        return await product.save()
+    }
+
+    static async findByIdAndUpdate(id, data) {
+        const product = await ProductModel.findById(id)
+        if (!product) return null
+
+        Object.assign(product, data)
+        return await product.save()
+    }
+
+    static async findByIdAndDelete(id) {
+        return await ProductModel.findOneAndDelete({ _id: id })
+    }
 }
 
 export default ProductRepository
