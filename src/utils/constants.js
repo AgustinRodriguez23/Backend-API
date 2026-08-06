@@ -5,17 +5,29 @@ export const USER_ROLES = Object.freeze({
 })
 
 export const PRODUCT_STATE = Object.freeze({
-  IN_STOCK: 'in_stock',
-  OUT_OF_STOCK: 'out_of_stock',
-  PRE_ORDER: 'pre_order',
-  DISCONTINUED: 'discontinued',
+    IN_STOCK: 'in_stock',
+    OUT_OF_STOCK: 'out_of_stock',
+    PRE_ORDER: 'pre_order',
+    DISCONTINUED: 'discontinued',
 })
 
-//export const ORDER_STATUS = {
-//  CREATED: 'created',
- // ASSIGNED: 'assigned',
- // PICKED_UP: 'picked_up',
- // IN_TRANSIT: 'in_transit',
- // DELIVERED: 'delivered',
- // CANCELLED: 'cancelled'
-//}
+export const ORDER_STATUS = Object.freeze({
+    CREATED: 'created',
+    ASSIGNED: 'assigned',
+    PICKED_UP: 'picked_up',
+    IN_TRANSIT: 'in_transit',
+    DELIVERED: 'delivered',
+    CANCELLED: 'cancelled'
+})
+
+export const ORDER_PRIORITY = Object.freeze({
+    LOW: 'low',
+    MEDIUM: 'medium',
+    HIGH: 'high'
+})
+
+export const DELIVERY_STATUS = Object.freeze({
+    ASSIGNED: 'assigned',
+    IN_TRANSIT: 'in_transit',
+    DELIVERED: 'delivered',
+})
