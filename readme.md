@@ -1,5 +1,3 @@
-# Backend III - API
-
 ## Manejo de errores
 
 ### Estructura de respuesta
