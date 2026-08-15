@@ -1,7 +1,9 @@
 import express from "express"
 
-import { config } from "./config/config.js"
+import { config } from "./config/env.config.js"
 import { connectDB } from "./config/db.js"
+
+import { errorHandler, notFoundRoute } from "./middlewares/error-handler.middleware.js"
 
 import usersRoutes from "./routes/users.routes.js"
 import productsRoutes from "./routes/products.routes.js"
@@ -20,6 +22,9 @@ if (config.NODE_ENV !== 'production') {
 app.get("/", (req, res) =>{
     res.send("landing")
 })
+
+app.use(notFoundRoute)
+app.use(errorHandler)
 
 connectDB()
 

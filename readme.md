@@ -1,52 +1,82 @@
 # Backend III - API
 
-1. Cloná el repositorio:
-   ```bash
-   git clone https://github.com/AgustinRodriguez23/Backend-API
-   cd <nombre-del-proyecto>
-   ```
+## Manejo de errores
 
-2. Instalá las dependencias:
-   ```bash
-   npm install
-   ```
+### Estructura de respuesta
 
-3. Creá un archivo `.env` en la raíz del proyecto con las siguientes variables:
-   ```env
-   PORT=3000 | puerto que levanta el servidor
-   MONGO_URI=mongodb://localhost:27017/<nombre-de-db>
-   NODE_ENV=development|production
-   ```
+Todos los errores devueltos por la API (de negocio o inesperados) tienen el mismo formato JSON:
 
-## Cómo correr el proyecto
+```json
+{
+  "status": "error",
+  "error": "USER_NOT_FOUND",
+  "message": "User not found"
+}
+```
 
-**Modo desarrollo** 
+| Campo     | Descripción                                                                 |
+|-----------|------------------------------------------------------------------------------|
+| `status`  | Siempre `"error"`.                                                          |
+| `error`   | Código interno del error (ver `ERROR_CODES` en `errors/error-codes.js`).    |
+| `message` | Mensaje legible, ya sea el default del código o uno custom.                 |
+
+El status code HTTP varía según el error (400, 404, 409, 500, etc.), definido junto a cada código en `error-codes.js`.
+
+### Códigos de error disponibles
+
+| Código                   | Status | Cuándo ocurre                                      |
+|---------------------------|--------|-----------------------------------------------------|
+| `USER_NOT_FOUND`          | 404    | El usuario solicitado no existe.                    |
+| `PRODUCT_NOT_FOUND`       | 404    | El producto solicitado no existe.                   |
+| `INVALID_ID`              | 400    | El `id` no tiene un formato válido de Mongo.         |
+| `DUPLICATE_KEY`           | 409    | Ya existe un registro con ese valor único (email).  |
+| `VALIDATION_ERROR`        | 400    | Falla una validación de campos (propia o de Mongoose). |
+| `INVALID_MOCK_QUANTITY`   | 400    | La cantidad de mocks pedida es inválida o excede el límite. |
+| `ROUTE_NOT_FOUND`         | 404    | La ruta solicitada no existe.                       |
+| `INTERNAL_SERVER_ERROR`   | 500    | Cualquier error no contemplado.                     |
+
+### Cómo probar casos inválidos
+
+Cada endpoint delega el manejo de errores en el `errorHandler` centralizado, así que probar un caso inválido siempre sigue el mismo patrón: hacer el request y verificar `status` + `error` en la respuesta.
+
+**Usuarios / Productos**
 ```bash
-npm run dev (con reinicio automático al realizar cambios si usas `node --watch`)
+# ID inexistente -> 404 USER_NOT_FOUND / PRODUCT_NOT_FOUND
+curl http://localhost:3000/api/users/64f0000000000000000000ff
+
+# ID con formato inválido -> 400 INVALID_ID
+curl http://localhost:3000/api/users/abc123
+
+# Crear usuario sin campos requeridos -> 400 VALIDATION_ERROR
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@test.com"}'
+
+# Crear usuario con email duplicado -> 409 DUPLICATE_KEY
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"first_name":"Ana","last_name":"Perez","email":"existente@test.com","password":"123456"}'
 ```
 
-Por defecto, la API queda disponible en `http://localhost:3000`.
+**Módulo de mocks**
+```bash
+# Cantidad negativa o cero -> 400 INVALID_MOCK_QUANTITY
+curl "http://localhost:3000/api/mocks/mocking-users?count=0"
 
-## Arquitectura del proyecto
+# Cantidad por encima del límite (>= 1000) -> 400 INVALID_MOCK_QUANTITY
+curl "http://localhost:3000/api/mocks/mocking-users?count=5000"
 
-El proyecto sigue una arquitectura en capas:
+# Cantidad no numérica -> 400 INVALID_MOCK_QUANTITY
+curl "http://localhost:3000/api/mocks/mocking-orders?count=abc"
 
+# Generación de productos mock guardando en DB
+curl -X POST http://localhost:3000/api/mocks/generate-products \
+  -H "Content-Type: application/json" \
+  -d '{"count": 10, "saveToDatabase": true}'
 ```
-Route → Controller → Service → Repository → Model
+
+**Ruta inexistente**
+```bash
+# -> 404 ROUTE_NOT_FOUND
+curl http://localhost:3000/api/ruta-que-no-existe
 ```
-
-- **Route**: define los endpoints HTTP y los conecta con el controller correspondiente.
-- **Controller**: recibe el `req`/`res`, extrae y valida los datos de entrada, llama al service, y traduce el resultado (o el error) a una respuesta HTTP con el status code correcto.
-- **Service**: contiene la lógica de negocio.
-- **Repository**: encapsula el acceso a datos (consultas a Mongoose/MongoDB).
-- **Model**: define el schema y las reglas propias de los datos (validaciones de Mongoose, hooks, etc.).
-
-### ¿Por qué separar lógica entre Service y Repository?
-
-La idea central es separar **qué hace la aplicación** (reglas de negocio) de **cómo se accede a los datos** (detalles de la base de datos):
-
-- **El Repository solo sabe hablar con la base de datos.** No conoce reglas de negocio: recibe un filtro o un id, y devuelve documentos. Por ejemplo, `ProductRepository.find()` simplemente arma la query de Mongoose con paginación y proyección, sin decidir *qué* productos deberían verse.
-
-- **El Service decide las reglas de negocio**, usando al Repository como una herramienta. Por ejemplo:
-  - En `getAllProducts`, el Service decide que los productos con estado `OUT_OF_STOCK` no deberían listarse por defecto — esa es una regla de negocio, no un detalle de acceso a datos. El Repository solo ejecuta el filtro que el Service le pasa.
-  - En `getProductById`, `updateProduct` y `deleteProduct`, el Service decide qué significa "no encontrado" (lanzar un error de dominio `"Product not found"`) y se lo comunica al Controller en un lenguaje que no depende de Mongoose ni de HTTP.

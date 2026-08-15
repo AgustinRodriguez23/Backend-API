@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 
 dotenv.config()
 
-const REQUIRED_ENV_VARS = ['PORT', 'NODE_ENV', 'MONGO_URI']
+const REQUIRED_ENV_VARS = ['PORT', 'NODE_ENV', 'MONGODB_URI']
 
 for (const varName of REQUIRED_ENV_VARS) {
     if (!process.env[varName]) {
@@ -12,6 +12,6 @@ for (const varName of REQUIRED_ENV_VARS) {
 
 export const config = {
     PORT: process.env.PORT,
-    MONGO_URI: process.env.MONGO_URI,
+    MONGODB_URI: process.env.MONGODB_URI,
     NODE_ENV: process.env.NODE_ENV,
 }

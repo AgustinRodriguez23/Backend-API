@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker"
 
 import ProductModel from "../../models/product.model.js"
+import CustomError from "../../errors/custom.error.js"
 
 import { 
     USER_ROLES, 
@@ -9,9 +10,19 @@ import {
     DELIVERY_STATUS 
 } from "../../utils/constants.js"
 
+const MAX_MOCK_COUNT = 1000
 
 class MockService {
+
+    static validateCount = (count) => {
+        if (isNaN(count) || count <= 0 || count >= MAX_MOCK_COUNT) {
+            throw new CustomError('INVALID_MOCK_QUANTITY')
+        }
+    }
+
     static generateMockUsers = (count) => {
+        this.validateCount(count)
+
         const roles = Object.values(USER_ROLES)
 
         const users = Array.from({length: count}, () => { 
@@ -27,6 +38,8 @@ class MockService {
     }
 
     static generateMockProducts = (count) => {
+        this.validateCount(count)
+
         const products = Array.from({length: count}, () => {
             return {
                 title: faker.commerce.productName(),
@@ -45,6 +58,8 @@ class MockService {
     }   
 
     static generateMockOrders = (count, users) => {
+        this.validateCount(count)
+
         const statusOrders = Object.values(ORDER_STATUS)
         const priorities = Object.values(ORDER_PRIORITY)
 

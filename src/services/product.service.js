@@ -1,4 +1,5 @@
 import ProductRepository from "../repositories/product.repository.js";
+import CustomError from "../errors/custom.error.js";
 
 import { PRODUCT_STATE } from "../utils/constants.js";
 
@@ -19,7 +20,7 @@ class ProductService {
     static async getProductById(id) {
         const product = await ProductRepository.findById(id)
         if (!product) {
-            throw new Error("Product not found")
+            throw new CustomError('PRODUCT_NOT_FOUND')
         }
         return product
     }
@@ -31,7 +32,7 @@ class ProductService {
     static async updateProduct(id, data) {
         const product = await ProductRepository.findByIdAndUpdate(id, data)
         if (!product) {
-            throw new Error("Product not found")
+            throw new CustomError('PRODUCT_NOT_FOUND')
         }
         return product
     }
@@ -39,7 +40,7 @@ class ProductService {
     static async deleteProduct(id) {
         const product = await ProductRepository.findByIdAndDelete(id)
         if (!product) {
-            throw new Error("Product not found")
+            throw new CustomError('PRODUCT_NOT_FOUND')
         }
         return product
     }
