@@ -1,3 +1,4 @@
+import logger from "../config/logger.js";
 import CustomError from "../errors/custom.error.js";
 
 export function errorHandler(err, req, res, next) {
@@ -7,9 +8,9 @@ export function errorHandler(err, req, res, next) {
     const { statusCode, code, message } = customError
 
     if (isCustomError) {
-        console.warn('Custom Error', err.message)
+        logger.warn(`Custom Error: ${err.message}`)
     } else {
-        console.error('Unexpected Error', err)
+        logger.error(err.stack ?? err.message)
     }
 
     res.status(statusCode).json({ status: 'error', error: code, message })
@@ -30,5 +31,5 @@ function mapToCustomError(err) {
         return new CustomError('VALIDATION_ERROR', err.message)
     }
 
-    return new CustomError('INTERNAL_SERVER_ERROR')
+    return new CustomError('INTERNAL_SERVER_ERROR', err.message)
 }
