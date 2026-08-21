@@ -1,0 +1,12 @@
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Service health status
+      description: >
+        This endpoint provides information about the health status of the service.
+        DB connection status is NOT included.
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthResponse' 

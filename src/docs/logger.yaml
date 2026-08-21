@@ -1,0 +1,19 @@
+paths:
+  /logger-test:
+    get:
+      tags:
+        - Debug
+      summary: Logger validation endpoint
+      description: >
+        Internal validation tool used to manually verify that the logger
+        is emitting entries correctly at every level (debug, http, info,
+        warn, error, fatal). This is NOT a business feature and should not
+        be treated as part of the public API.
+      responses:
+        '200':
+          description: Logger test executed, entries written to the configured log outputs
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Logger test completed.

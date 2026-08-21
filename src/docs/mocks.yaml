@@ -1,0 +1,81 @@
+paths:
+  /api/mocks/mocking-users:
+    get:
+      tags:
+        - Mocks
+      summary: Generate mock users
+      description: >
+        Returns a list of randomly generated fake users. These users are
+        NOT persisted in the database. Only available outside of production.
+      parameters:
+        - $ref: '#/components/parameters/MockCount'
+      responses:
+        '200':
+          $ref: '#/components/responses/MockUsersResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+
+  /api/mocks/generate-products:
+    post:
+      tags:
+        - Mocks
+      summary: Generate mock products
+      description: >
+        Generates a given quantity of randomly generated fake products.
+        If 'saveToDatabase' is true, the generated products are also
+        inserted into the database. Only available outside of production.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateProductsRequest'
+      responses:
+        '200':
+          description: Products generated but not saved to the database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateProductsResponse'
+        '201':
+          description: Products generated and saved to the database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateProductsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+
+  /api/mocks/mocking-orders:
+    get:
+      tags:
+        - Mocks
+      summary: Generate mock orders
+      description: >
+        Returns a list of randomly generated fake orders. These orders are
+        NOT persisted in the database. Only available outside of production.
+      parameters:
+        - $ref: '#/components/parameters/MockCount'
+      responses:
+        '200':
+          $ref: '#/components/responses/MockOrdersResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+
+  /api/mocks/mocking-deliveries:
+    get:
+      tags:
+        - Mocks
+      summary: Generate mock deliveries
+      description: >
+        Returns a list of randomly generated fake deliveries, built from a
+        set of randomly generated fake orders. These deliveries are NOT
+        persisted in the database. Only available outside of production.
+      parameters:
+        - $ref: '#/components/parameters/MockCount'
+      responses:
+        '200':
+          $ref: '#/components/responses/MockDeliveriesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+

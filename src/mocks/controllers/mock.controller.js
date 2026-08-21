@@ -20,8 +20,8 @@ class MockController {
             const products = MockService.generateMockProducts(count)
 
             if (saveToDatabase) {
-                await MockService.saveMockProducts(products)
-                return res.status(201).json({ products, message: 'Products saved succesfully' })
+                const insertedProducts = await MockService.saveMockProducts(products)
+                return res.status(201).json({ products: insertedProducts, message: 'Products saved succesfully' })
             }
 
             return res.status(200).json({ products, message: 'Products generated succesfully' })

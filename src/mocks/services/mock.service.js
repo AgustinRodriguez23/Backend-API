@@ -54,7 +54,8 @@ class MockService {
     }
     
     static saveMockProducts = async (products) => {
-        await ProductModel.insertMany(products)
+        const insertedProducts = await ProductModel.insertMany(products)
+        return insertedProducts
     }   
 
     static generateMockOrders = (count, users) => {
@@ -88,7 +89,7 @@ class MockService {
         const couriers = users.filter(u => u.role === USER_ROLES.COURIER)
 
         const deliveries = orders
-            .filter(order => order.status !== ORDER_STATUS.PENDING)
+            .filter(order => order.status !== ORDER_STATUS.CANCELLED)
             .map(order => {
                 return {
                 id: faker.string.uuid(),
