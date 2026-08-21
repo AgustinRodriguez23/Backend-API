@@ -4,7 +4,7 @@ La documentación interactiva de la API se genera con `swagger-jsdoc` y se sirve
 
 **Acceso:** con el servidor corriendo, entrá a:
 
-http://localhost:<PORT>/api/docs
+http://localhost:<PUERTO>/api/docs
 
 
 (por defecto `PORT=3000`, configurable en `.env`)
