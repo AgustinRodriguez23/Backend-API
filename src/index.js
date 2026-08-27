@@ -10,6 +10,8 @@ import { errorHandler, notFoundRoute } from "./middlewares/error-handler.middlew
 
 import usersRoutes from "./routes/users.routes.js"
 import productsRoutes from "./routes/products.routes.js"
+import ordersRoutes from "./routes/orders.routes.js"
+import deliveriesRoutes from "./routes/deliveries.routes.js"
 import mocksRoutes from "./mocks/routes/mock.routes.js"
 
 
@@ -21,6 +23,8 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs))
 
 app.use("/api/users", usersRoutes)
 app.use("/api/products", productsRoutes)
+app.use("/api/orders", ordersRoutes)
+app.use("/api/deliveries", deliveriesRoutes)
 
 if (config.NODE_ENV !== 'production') {
     app.use("/api/mocks", mocksRoutes)

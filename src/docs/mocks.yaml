@@ -13,7 +13,9 @@ paths:
         '200':
           $ref: '#/components/responses/MockUsersResponse'
         '400':
-          $ref: '#/components/responses/BadRequestResponse'
+          $ref: '#/components/responses/InvalidMockQuantityResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
 
   /api/mocks/generate-products:
     post:
@@ -44,7 +46,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/GenerateProductsResponse'
         '400':
-          $ref: '#/components/responses/BadRequestResponse'
+          $ref: '#/components/responses/InvalidMockQuantityResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
 
   /api/mocks/mocking-orders:
     get:
@@ -60,7 +64,9 @@ paths:
         '200':
           $ref: '#/components/responses/MockOrdersResponse'
         '400':
-          $ref: '#/components/responses/BadRequestResponse'
+          $ref: '#/components/responses/InvalidMockQuantityResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
 
   /api/mocks/mocking-deliveries:
     get:
@@ -77,5 +83,7 @@ paths:
         '200':
           $ref: '#/components/responses/MockDeliveriesResponse'
         '400':
-          $ref: '#/components/responses/BadRequestResponse'
+          $ref: '#/components/responses/InvalidMockQuantityResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
 

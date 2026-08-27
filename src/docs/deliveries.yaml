@@ -1,0 +1,130 @@
+paths:
+  /api/deliveries:
+    get:
+      tags:
+        - Deliveries
+      summary: Get all deliveries
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, example: 1 }
+        - name: pageSize
+          in: query
+          required: false
+          schema: { type: integer, example: 20 }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, example: assigned }
+      responses:
+        '200':
+          $ref: '#/components/responses/DeliveriesGetResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+    post:
+      tags:
+        - Deliveries
+      summary: Create delivery
+      description: >
+        Creates a delivery for an existing order. The order must exist, must
+        not be cancelled, and must not already have a delivery associated
+        (an order can only have one delivery).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryCreateRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/DeliveryCreatedResponse'
+        '400':
+          description: >
+            Either the request body failed validation (error: VALIDATION_ERROR)
+            or the referenced order is cancelled (error: INVALID_ORDER_STATUS).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: VALIDATION_ERROR
+                message: Missing required fields
+        '404':
+          $ref: '#/components/responses/OrderNotFoundResponse'
+        '409':
+          $ref: '#/components/responses/DeliveryOrderConflictResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /api/deliveries/{id}:
+    get:
+      tags:
+        - Deliveries
+      summary: Get delivery by ID
+      description: Returns the details of a single delivery by its ID.
+      parameters:
+        - $ref: '#/components/parameters/DeliveryId'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeliveryResponse'
+        '400':
+          $ref: '#/components/responses/InvalidIdResponse'
+        '404':
+          $ref: '#/components/responses/DeliveryNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+    patch:
+      tags:
+        - Deliveries
+      summary: Update delivery
+      description: >
+        Updates one or more fields of an existing delivery (e.g. assign a
+        courier, change status, update address or estimated delivery date).
+      parameters:
+        - $ref: '#/components/parameters/DeliveryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryUpdateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeliveryResponse'
+        '400':
+          description: >
+            Either the request body failed validation (error: VALIDATION_ERROR)
+            or the ID in the path is not a valid format (error: INVALID_ID).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: VALIDATION_ERROR
+                message: Validation error
+        '404':
+          $ref: '#/components/responses/DeliveryNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+    delete:
+      tags:
+        - Deliveries
+      summary: Delete delivery
+      description: Deletes an existing delivery by ID.
+      parameters:
+        - $ref: '#/components/parameters/DeliveryId'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeliveryDeletedResponse'
+        '400':
+          $ref: '#/components/responses/InvalidIdResponse'
+        '404':
+          $ref: '#/components/responses/DeliveryNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'

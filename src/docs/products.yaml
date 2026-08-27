@@ -7,6 +7,8 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/ProductsGetResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
 
     post:
       tags:
@@ -24,6 +26,8 @@ paths:
           $ref: '#/components/responses/ProductCreatedResponse'
         '400':
           $ref: '#/components/responses/BadRequestResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
 
   /api/products/{id}:
     get:
@@ -36,8 +40,12 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/ProductResponse'
+        '400':
+          $ref: '#/components/responses/InvalidIdResponse'
         '404':
           $ref: '#/components/responses/ProductNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
 
     patch:
       tags:
@@ -58,9 +66,21 @@ paths:
         '200':
           $ref: '#/components/responses/ProductResponse'
         '400':
-          $ref: '#/components/responses/BadRequestResponse'
+          description: >
+            Either the request body failed validation (error: VALIDATION_ERROR)
+            or the ID in the path is not a valid format (error: INVALID_ID).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: VALIDATION_ERROR
+                message: Validation error
         '404':
           $ref: '#/components/responses/ProductNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
 
     delete:
       tags:
@@ -72,5 +92,9 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/ProductDeletedResponse'
+        '400':
+          $ref: '#/components/responses/InvalidIdResponse'
         '404':
           $ref: '#/components/responses/ProductNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'

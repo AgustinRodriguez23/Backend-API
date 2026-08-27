@@ -9,7 +9,7 @@ export const ERROR_CODES = Object.freeze ({
     },
     DUPLICATE_KEY: {
         statusCode: 409,
-        message: 'Email already in use'
+        message: 'A field with this value already exists'
     },
     VALIDATION_ERROR: {
         statusCode: 400,
@@ -38,5 +38,9 @@ export const ERROR_CODES = Object.freeze ({
     PRODUCT_NOT_FOUND: {
         statusCode: 404,
         message: 'Product not found'
+    },
+    DELIVERY_NOT_FOUND: {
+        statusCode: 404,
+        message: 'Delivery not found'
     }
 })

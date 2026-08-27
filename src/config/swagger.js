@@ -1,7 +1,7 @@
 import swaggerJSDoc from "swagger-jsdoc"
 import { config } from "./env.config.js"
-
 import { USER_ROLES, PRODUCT_STATE, ORDER_STATUS, ORDER_PRIORITY, DELIVERY_STATUS } from "../utils/constants.js"
+import { ERROR_CODES } from "../errors/error-codes.js"
 
 const schemas = {
     Health: {
@@ -135,7 +135,7 @@ const schemas = {
         type: 'object',
         required: ['count'],
         properties: {
-            count: {type: 'integer', minimum: 1, maximum: 999, example: 10},
+            count: { type: 'integer', minimum: 1, maximum: 999, example: 10 },
             saveToDatabase: { type: 'boolean', default: false, example: false },
         }
     },
@@ -173,6 +173,108 @@ const schemas = {
             order_id: { type: 'string', format: 'uuid', example: '3fa85f64-5717-4562-b3fc-2c963f66afa6'},
             courier_email: { type: 'string', format: 'email', nullable: true, example: 'courier@example.com'},
             status: { type: 'string', enum: Object.values(DELIVERY_STATUS), example: 'assigned'},
+            address: { type: 'string', example: '742 Evergreen Terrace'},
+            estimated_delivery: { type: 'string', format: 'date-time'},
+        }
+    },
+    ErrorResponse: {
+        type: 'object',
+        description: 'Standard error format emitted by the global error handler middleware for every failed request.',
+        properties: {
+            status: { type: 'string', example: 'error' },
+            error: { type: 'string', enum: Object.keys(ERROR_CODES), example: 'USER_NOT_FOUND', description: 'Machine-readable error code' },
+            message: { type: 'string', example: 'User not found' },
+        }
+    },
+    OrderItem: {
+        type: 'object',
+        properties: {
+            product: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0', description: 'Product ID' },
+            quantity: { type: 'integer', minimum: 1, example: 2 },
+        }
+    },
+    Order: {
+        type: 'object',
+        properties: {
+            _id: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0'},
+            user: { $ref: '#/components/schemas/User' },
+            products: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        product: { $ref: '#/components/schemas/Product' },
+                        quantity: { type: 'integer', example: 2 },
+                    }
+                }
+            },
+            status: { type: 'string', enum: Object.values(ORDER_STATUS), example: 'created'},
+            priority: { type: 'string', enum: Object.values(ORDER_PRIORITY), example: 'medium'},
+            total: { type: 'number', example: 249.98, description: 'Calculated by the server from the current product prices'},
+            createdAt: { type: 'string', format: 'date-time'},
+            updatedAt: { type: 'string', format: 'date-time'},
+        }
+    },
+    OrderCreateRequest: {
+        type: 'object',
+        description: "'total' is not accepted here: it is calculated by the server from the current price of each product.",
+        required: ['user', 'products'],
+        properties: {
+            user: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0', description: 'User ID' },
+            products: {
+                type: 'array',
+                minItems: 1,
+                items: { $ref: '#/components/schemas/OrderItem' }
+            },
+            priority: { type: 'string', enum: Object.values(ORDER_PRIORITY), example: 'medium'},
+        }
+    },
+    OrderUpdateRequest: {
+        type: 'object',
+        description: "All fields are optional. Only the provided fields will be updated. If 'products' is provided, 'total' is recalculated by the server.",
+        properties: {
+            products: {
+                type: 'array',
+                minItems: 1,
+                items: { $ref: '#/components/schemas/OrderItem' }
+            },
+            status: { type: 'string', enum: Object.values(ORDER_STATUS), example: 'assigned'},
+            priority: { type: 'string', enum: Object.values(ORDER_PRIORITY), example: 'high'},
+        }
+    },
+    Delivery: {
+        type: 'object',
+        properties: {
+            _id: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0'},
+            order: { $ref: '#/components/schemas/Order' },
+            courier: {
+                allOf: [{ $ref: '#/components/schemas/User' }],
+                nullable: true,
+                description: 'Null until a courier is assigned'
+            },
+            status: { type: 'string', enum: Object.values(DELIVERY_STATUS), example: 'assigned'},
+            address: { type: 'string', example: '742 Evergreen Terrace'},
+            estimated_delivery: { type: 'string', format: 'date-time'},
+            createdAt: { type: 'string', format: 'date-time'},
+            updatedAt: { type: 'string', format: 'date-time'},
+        }
+    },
+    DeliveryCreateRequest: {
+        type: 'object',
+        required: ['order', 'address'],
+        properties: {
+            order: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0', description: 'Order ID. Must not already have a delivery, and the order must not be cancelled.' },
+            courier: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0', description: 'Courier (User) ID. Optional, can be assigned later.' },
+            address: { type: 'string', example: '742 Evergreen Terrace'},
+            estimated_delivery: { type: 'string', format: 'date-time'},
+        }
+    },
+    DeliveryUpdateRequest: {
+        type: 'object',
+        description: 'All fields are optional. Only the provided fields will be updated.',
+        properties: {
+            courier: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0', description: 'Courier (User) ID' },
+            status: { type: 'string', enum: Object.values(DELIVERY_STATUS), example: 'in_transit'},
             address: { type: 'string', example: '742 Evergreen Terrace'},
             estimated_delivery: { type: 'string', format: 'date-time'},
         }
@@ -237,40 +339,61 @@ const responses = {
         }
     },
     BadRequestResponse: {
-        description: 'Bad request',
+        description: 'Validation error thrown by Mongoose when the request body does not meet the schema requirements',
         content: {
             'application/json': {
                 schema: {
-                type: 'object',
-                properties: {
-                    message: {type: 'string', example: 'Invalid request data'}
-                    }
+                    $ref: '#/components/schemas/ErrorResponse'
+                },
+                example: {
+                    status: 'error',
+                    error: 'VALIDATION_ERROR',
+                    message: 'Validation error'
                 }
             }
-        }  
+        }
     },
     UserNotFoundResponse: {
-        description: 'User not found',
+        description: 'No user matches the given ID',
         content: {
             'application/json': {
                 schema: {
-                    type: 'object',
-                    properties: {
-                        message: {type: 'string', example: 'User not found'}
-                    }
+                    $ref: '#/components/schemas/ErrorResponse'
+                },
+                example: {
+                    status: 'error',
+                    error: 'USER_NOT_FOUND',
+                    message: 'User not found'
+                }
+            }
+        }
+    },
+    InvalidIdResponse: {
+        description: 'The provided ID does not have a valid format (Mongoose CastError)',
+        content: {
+            'application/json': {
+                schema: {
+                    $ref: '#/components/schemas/ErrorResponse'
+                },
+                example: {
+                    status: 'error',
+                    error: 'INVALID_ID',
+                    message: 'Invalid id'
                 }
             }
         }
     },
     ConflictResponse: {
-        description: 'Conflict, the email address is already registered',
+        description: 'A unique field (e.g. email) already exists in the database (MongoDB duplicate key error)',
         content: {
             'application/json': {
                 schema: {
-                    type: 'object',
-                    properties: {
-                        message: {type: 'string', example: 'Email already registered'}
-                    }
+                    $ref: '#/components/schemas/ErrorResponse'
+                },
+                example: {
+                    status: 'error',
+                    error: 'DUPLICATE_KEY',
+                    message: "The field 'email' is already in use"
                 }
             }
         }
@@ -322,14 +445,31 @@ const responses = {
         }
     },
     ProductNotFoundResponse: {
-        description: 'Product not found',
+        description: 'No product matches the given ID',
         content: {
             'application/json': {
                 schema: {
-                    type: 'object',
-                    properties: {
-                        message: {type: 'string', example: 'Product not found'}
-                    }
+                    $ref: '#/components/schemas/ErrorResponse'
+                },
+                example: {
+                    status: 'error',
+                    error: 'PRODUCT_NOT_FOUND',
+                    message: 'Product not found'
+                }
+            }
+        }
+    },
+    InvalidMockQuantityResponse: {
+        description: '"count" is missing, not a number, or out of the allowed range (1-999)',
+        content: {
+            'application/json': {
+                schema: {
+                    $ref: '#/components/schemas/ErrorResponse'
+                },
+                example: {
+                    status: 'error',
+                    error: 'INVALID_MOCK_QUANTITY',
+                    message: 'Invalid mock quantity'
                 }
             }
         }
@@ -373,6 +513,153 @@ const responses = {
             }
         }
     },
+    InternalServerErrorResponse: {
+        description: 'Unexpected error not handled by any specific error case',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: {
+                    status: 'error',
+                    error: 'INTERNAL_SERVER_ERROR',
+                    message: 'Internal server error'
+                }
+            }
+        }
+    },
+    OrdersGetResponse: {
+        description: 'Response for listing orders',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/Order' }
+                }
+            }
+        }
+    },
+    OrderResponse: {
+        description: 'Response with a single order',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/Order' }
+            }
+        }
+    },
+    OrderCreatedResponse: {
+        description: 'Response for order creation',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/Order' }
+            }
+        }
+    },
+    OrderDeletedResponse: {
+        description: 'Response for order deletion',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        statusCode: { type: 'integer', example: 200 },
+                        message: { type: 'string', example: 'Order deleted' }
+                    }
+                }
+            }
+        }
+    },
+    OrderNotFoundResponse: {
+        description: 'No order matches the given ID',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: {
+                    status: 'error',
+                    error: 'ORDER_NOT_FOUND',
+                    message: 'Order not found'
+                }
+            }
+        }
+    },
+    InvalidOrderStatusResponse: {
+        description: "The requested operation is not valid for the order's current status (e.g. creating a delivery for a cancelled order)",
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: {
+                    status: 'error',
+                    error: 'INVALID_ORDER_STATUS',
+                    message: 'Cannot create a delivery for a cancelled order'
+                }
+            }
+        }
+    },
+    DeliveriesGetResponse: {
+        description: 'Response for listing deliveries',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/Delivery' }
+                }
+            }
+        }
+    },
+    DeliveryResponse: {
+        description: 'Response with a single delivery',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/Delivery' }
+            }
+        }
+    },
+    DeliveryCreatedResponse: {
+        description: 'Response for delivery creation',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/Delivery' }
+            }
+        }
+    },
+    DeliveryDeletedResponse: {
+        description: 'Response for delivery deletion',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        statusCode: { type: 'integer', example: 200 },
+                        message: { type: 'string', example: 'Delivery deleted' }
+                    }
+                }
+            }
+        }
+    },
+    DeliveryNotFoundResponse: {
+        description: 'No delivery matches the given ID',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: {
+                    status: 'error',
+                    error: 'DELIVERY_NOT_FOUND',
+                    message: 'Delivery not found'
+                }
+            }
+        }
+    },
+    DeliveryOrderConflictResponse: {
+        description: 'The given order already has a delivery associated (MongoDB duplicate key error on the unique "order" field)',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: {
+                    status: 'error',
+                    error: 'DUPLICATE_KEY',
+                    message: "The field 'order' is already in use"
+                }
+            }
+        }
+    },
 
 }
 
@@ -408,6 +695,26 @@ const parameters = {
             maximum: 999,
             example: 10
         }
+    },
+    OrderId: {
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'Order ID',
+        schema: {
+            type: 'string',
+            example: '64a2f2e5c4b4d5e6f8g8h9i0'
+        }
+    },
+    DeliveryId: {
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'Delivery ID',
+        schema: {
+            type: 'string',
+            example: '64a2f2e5c4b4d5e6f8g8h9i0'
+        }
     }
 }
 
@@ -429,6 +736,8 @@ const swaggerSpecs = swaggerJSDoc({
             {name: 'Health', description: 'Endpoint related to health checks'},
             {name: 'Users', description: 'Endpoint related to user management'},
             {name: 'Products', description: 'Endpoint related to product management'},
+            {name: 'Orders', description: 'Endpoint related to order management'},
+            {name: 'Deliveries', description: 'Endpoint related to delivery management'},
             {name: 'Mocks', description: 'Endpoints for generating fake/mock data for testing purposes'},
             {name: 'Debug', description: 'Internal validation tools, not business functionality'},
         ],

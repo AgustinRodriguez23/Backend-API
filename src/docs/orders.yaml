@@ -1,0 +1,122 @@
+paths:
+  /api/orders:
+    get:
+      tags:
+        - Orders
+      summary: Get all orders
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, example: 1 }
+        - name: pageSize
+          in: query
+          required: false
+          schema: { type: integer, example: 20 }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, example: created }
+        - name: priority
+          in: query
+          required: false
+          schema: { type: string, example: medium }
+      responses:
+        '200':
+          $ref: '#/components/responses/OrdersGetResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+    post:
+      tags:
+        - Orders
+      summary: Create order
+      description: >
+        Creates a new order for a user. The 'total' is calculated by the
+        server from the current price of each product; it is not accepted
+        in the request body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/OrderCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/ProductNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /api/orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Get order by ID
+      description: Returns the details of a single order by its ID.
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderResponse'
+        '400':
+          $ref: '#/components/responses/InvalidIdResponse'
+        '404':
+          $ref: '#/components/responses/OrderNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+    patch:
+      tags:
+        - Orders
+      summary: Update order
+      description: >
+        Updates one or more fields of an existing order. If 'products' is
+        provided, 'total' is recalculated by the server.
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderUpdateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderResponse'
+        '400':
+          description: >
+            Either the request body failed validation (error: VALIDATION_ERROR)
+            or the ID in the path is not a valid format (error: INVALID_ID).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: VALIDATION_ERROR
+                message: Validation error
+        '404':
+          $ref: '#/components/responses/OrderNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+    delete:
+      tags:
+        - Orders
+      summary: Delete order
+      description: Deletes an existing order by ID.
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderDeletedResponse'
+        '400':
+          $ref: '#/components/responses/InvalidIdResponse'
+        '404':
+          $ref: '#/components/responses/OrderNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'

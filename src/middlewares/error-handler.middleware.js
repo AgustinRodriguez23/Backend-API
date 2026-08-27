@@ -25,7 +25,11 @@ function mapToCustomError(err) {
         return new CustomError('INVALID_ID')
     }
     if (err.code === 11000) {
-        return new CustomError('DUPLICATE_KEY')
+        const duplicatedField = Object.keys(err.keyValue ?? {})[0]
+        const message = duplicatedField
+            ? `The field '${duplicatedField}' is already in use`
+            : undefined
+        return new CustomError('DUPLICATE_KEY', message)
     }
     if (err.name === 'ValidationError') {
         return new CustomError('VALIDATION_ERROR', err.message)
