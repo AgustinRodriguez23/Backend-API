@@ -1,20 +1,37 @@
-## Documentación de la API (Swagger)
+## Testing
 
-La documentación interactiva de la API se genera con `swagger-jsdoc` y se sirve con `swagger-ui-express`.
+### Herramientas
+- **Mocha** — framework para organizar y ejecutar los tests.
+- **Chai** — aserciones (`expect`).
+- **Supertest** — peticiones HTTP contra la app de Express sin necesidad de levantar un servidor real.
+- **@faker-js/faker** (vía `MockService`) — generación de datos de prueba controlados y repetibles.
 
-**Acceso:** con el servidor corriendo, entrá a:
+### Cómo ejecutar los tests
+1. Asegurate de tener MongoDB corriendo localmente (`mongod`).
+2. Copiá `.env.example` a `.env.test` y completá las variables (ver detalle abajo).
+3. Corré:
+```bash
+   npm test
+```
 
-http://localhost:<PUERTO>/api/docs
+Los tests corren contra una base de datos separada (`shipnow_test`), nunca contra la base de desarrollo. Al finalizar la corrida completa, se limpian automáticamente todas las colecciones usadas.
 
+### Base de datos de testing
+**Sí, es requerida.** Los tests son funcionales (no usan mocks de base de datos), por lo que necesitan una instancia de MongoDB accesible. Se recomienda una base local separada de la de desarrollo para no afectar datos reales.
 
-(por defecto `PORT=3000`, configurable en `.env`)
+### Variables de entorno necesarias (`.env.test`)
+| Variable       | Descripción                                  | Ejemplo                                          |
+|----------------|-----------------------------------------------|---------------------------------------------------|
+| `PORT`         | Puerto (no se usa realmente en los tests, pero es requerido por la validación de config) | `4000` |
+| `NODE_ENV`     | Debe ser `test` para que se cargue este archivo | `test` |
+| `MONGODB_URI`  | Conexión a la base de datos de testing        | `mongodb://127.0.0.1:27017/shipnow_test`          |
 
-### Qué está documentado ?
-
-| Tag | Endpoints | Notas |
-|---|---|---|
-| **Health** | `GET /health` | Estado del servicio. No incluye estado de conexión a la DB. |
-| **Users** | `GET /api/users`, `GET /api/users/:id`, `POST /api/users`, `PATCH /api/users/:id`, `DELETE /api/users/:id` | CRUD completo de usuarios. |
-| **Products** | `GET /api/products`, `GET /api/products/:id`, `POST /api/products`, `PATCH /api/products/:id`, `DELETE /api/products/:id` | CRUD completo de productos. |
-| **Mocks** | `GET /api/mocks/mocking-users`, `POST /api/mocks/generate-products`, `GET /api/mocks/mocking-orders`, `GET /api/mocks/mocking-deliveries` | Generación de datos falsos para testing/seeding. Solo disponibles fuera de producción (`NODE_ENV !== 'production'`). |
-| **Debug** | `GET /logger-test` | Herramienta interna de validación del logger, no es funcionalidad de negocio. |
+### Módulos cubiertos
+| Módulo    | Casos exitosos | Casos de error |
+|-----------|-----------------|------------------|
+| Users     | ✅ listar, crear | ✅ datos incompletos, email duplicado |
+| Products  | ✅ CRUD completo (vía service) | — |
+| Orders    | ✅ crear, listar, obtener por id, actualizar estado, eliminar | ✅ datos incompletos, id inexistente, id inválido, producto inexistente, estado inválido |
+| Mocks     | ✅ generación de usuarios, productos, pedidos y entregas mockeados | ✅ cantidad inválida |
+| Logger    | ✅ endpoint de prueba de logs | — |
+| Swagger   | ✅ UI accesible | — |

@@ -13,10 +13,10 @@
   "license": "ISC",
   "author": "Agustin Rodriguez",
   "type": "module",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch src/index.js"
+    "test": "cross-env NODE_ENV=test mocha",
+    "dev": "node --watch src/server.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -29,6 +29,10 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@faker-js/faker": "^10.5.0"
+    "@faker-js/faker": "^10.5.0",
+    "chai": "^6.2.2",
+    "cross-env": "^10.1.0",
+    "mocha": "^11.8.0",
+    "supertest": "^7.2.2"
   }
 }

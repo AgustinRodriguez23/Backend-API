@@ -42,6 +42,7 @@ class MockService {
 
         const products = Array.from({length: count}, () => {
             return {
+                _id: faker.database.mongodbObjectId(),
                 title: faker.commerce.productName(),
                 description: faker.commerce.productDescription(),
                 price: parseFloat(faker.commerce.price()),
