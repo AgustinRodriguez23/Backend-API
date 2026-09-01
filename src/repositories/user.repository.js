@@ -40,9 +40,17 @@ class UserRepository {
         ).select(UserRepository.#defaultProjection)
     }
 
-     static async deleteById(id) {
+    static async deleteById(id) {
         return await UserModel.findByIdAndDelete(id)
     }
+
+    static async addDocument(id, documentData) {
+        return await UserModel.findByIdAndUpdate(
+            id,
+            { $push: { documents: documentData } },
+            { new: true, runValidators: true }
+        ).select(UserRepository.#defaultProjection)
+}
 }
 
 export default UserRepository

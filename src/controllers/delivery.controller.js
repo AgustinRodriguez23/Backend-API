@@ -1,6 +1,9 @@
 import CustomError from "../errors/custom.error.js"
 import DeliveryService from "../services/delivery.service.js"
 
+import logger from "../config/logger.js"
+import { deleteFileIfExists } from "../utils/file.utils.js"
+
 class DeliveryController {
 
     static async getDeliveries(req, res, next) {
@@ -54,6 +57,29 @@ class DeliveryController {
             await DeliveryService.remove(id)
             res.status(200).json({ statusCode: 200, message: 'Delivery deleted' })
         } catch (error) {
+            next(error)
+        }
+    }
+
+    static async uploadDeliveryReceipt(req, res, next) {
+        try {
+            const { id } = req.params
+
+            const receiptData = {
+                original_name: req.file.originalname,
+                generated_name: req.file.filename,
+                path: req.file.path,
+                mimetype: req.file.mimetype,
+                size: req.file.size,
+                uploaded_at: new Date()
+            }
+
+            const updatedDelivery = await DeliveryService.addReceipt(id, receiptData)
+
+            logger.info(`Receipt uploaded and associated to delivery ${id}`)
+            res.status(201).json(updatedDelivery)
+        } catch (error) {
+            if (req.file) await deleteFileIfExists(req.file.path)
             next(error)
         }
     }

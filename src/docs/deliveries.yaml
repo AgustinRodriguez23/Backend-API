@@ -128,3 +128,39 @@ paths:
           $ref: '#/components/responses/DeliveryNotFoundResponse'
         '500':
           $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /api/deliveries/{id}/receipts:
+    post:
+      tags:
+        - Deliveries
+      summary: Upload delivery receipt
+      description: >
+        Uploads a proof-of-delivery receipt (signed remito, photo, etc.) for
+        an existing delivery. Sent as multipart/form-data.
+      parameters:
+        - $ref: '#/components/parameters/DeliveryId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadDeliveryReceiptRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/DeliveryReceiptUploadedResponse'
+        '400':
+          description: >
+            No file provided (FILE_REQUIRED), disallowed file type
+            (INVALID_FILE_TYPE), or file too large (FILE_TOO_LARGE).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: FILE_TOO_LARGE
+                message: File exceeds the maximum allowed size
+        '404':
+          $ref: '#/components/responses/DeliveryNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'

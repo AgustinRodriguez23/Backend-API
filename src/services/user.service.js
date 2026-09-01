@@ -42,6 +42,14 @@ class UserService {
         }
         return deletedUser
     }
+
+    static async addDocument(id, documentData) {
+        const updatedUser = await UserRepository.addDocument(id, documentData)
+        if (!updatedUser) {
+            throw new CustomError('USER_NOT_FOUND')
+        }
+        return updatedUser
+    }
 }
 
 export default UserService

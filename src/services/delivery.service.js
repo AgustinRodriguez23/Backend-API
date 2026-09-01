@@ -49,6 +49,14 @@ class DeliveryService {
         }
         return deletedDelivery
     }
+
+    static async addReceipt(id, receiptData) {
+        const updatedDelivery = await DeliveryRepository.addReceipt(id, receiptData)
+        if (!updatedDelivery) {
+            throw new CustomError('DELIVERY_NOT_FOUND')
+        }
+        return updatedDelivery
+    }
 }
 
 export default DeliveryService

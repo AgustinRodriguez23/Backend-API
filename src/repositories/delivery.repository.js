@@ -48,6 +48,18 @@ class DeliveryRepository {
     static async deleteById(id) {
         return await DeliveryModel.findByIdAndDelete(id)
     }
+
+    static async addReceipt(id, receiptData) {
+        const updatedDelivery = await DeliveryModel.findByIdAndUpdate(
+            id,
+            { $push: { receipts: receiptData } },
+            { new: true, runValidators: true }
+        )
+
+        if (!updatedDelivery) return null
+
+        return await DeliveryRepository.findById(updatedDelivery._id)
+    }
 }
 
 export default DeliveryRepository

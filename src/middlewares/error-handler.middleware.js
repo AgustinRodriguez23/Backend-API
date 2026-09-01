@@ -1,5 +1,6 @@
 import logger from "../config/logger.js";
 import CustomError from "../errors/custom.error.js";
+import multer from "multer";
 
 export function errorHandler(err, req, res, next) {
     const isCustomError = err instanceof CustomError
@@ -33,6 +34,15 @@ function mapToCustomError(err) {
     }
     if (err.name === 'ValidationError') {
         return new CustomError('VALIDATION_ERROR', err.message)
+    }
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return new CustomError('FILE_TOO_LARGE')
+        }
+        if (err.code === 'LIMIT_UNEXPECTED_FILE' && err.field === 'INVALID_FILE_TYPE') {
+            return new CustomError('INVALID_FILE_TYPE')
+        }
+        return new CustomError('UNEXPECTED_FILE_FIELD')
     }
 
     return new CustomError('INTERNAL_SERVER_ERROR', err.message)

@@ -106,3 +106,41 @@ paths:
           $ref: '#/components/responses/UserNotFoundResponse'
         '500':
           $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /api/users/{id}/documents:
+    post:
+      tags:
+        - Users
+      summary: Upload user document
+      description: >
+        Uploads an identification document (ID card, driver license, proof of
+        address, etc.) for an existing user. Sent as multipart/form-data.
+        The user must exist and document_type must be one of the allowed values.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadUserDocumentRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/UserDocumentUploadedResponse'
+        '400':
+          description: >
+            No file provided (FILE_REQUIRED), disallowed file type
+            (INVALID_FILE_TYPE), file too large (FILE_TOO_LARGE), or
+            document_type missing/invalid (INVALID_DOCUMENT_TYPE).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                error: INVALID_DOCUMENT_TYPE
+                message: Invalid document type
+        '404':
+          $ref: '#/components/responses/UserNotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'

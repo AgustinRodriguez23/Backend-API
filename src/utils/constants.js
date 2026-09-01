@@ -31,3 +31,18 @@ export const DELIVERY_STATUS = Object.freeze({
     IN_TRANSIT: 'in_transit',
     DELIVERED: 'delivered',
 })
+
+export const DOCUMENT_TYPE = Object.freeze({
+    ID_CARD: 'id_card',
+    DRIVER_LICENSE: 'driver_license',
+    PROOF_OF_ADDRESS: 'proof_of_address',
+    OTHER: 'other',
+})
+
+export const ALLOWED_FILE_MIMETYPES = Object.freeze([
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+])
+
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MB

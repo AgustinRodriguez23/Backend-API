@@ -42,5 +42,29 @@ export const ERROR_CODES = Object.freeze ({
     DELIVERY_NOT_FOUND: {
         statusCode: 404,
         message: 'Delivery not found'
-    }
+    },
+    FILE_REQUIRED: {
+        statusCode: 400,
+        message: 'A file is required'
+    },
+    INVALID_FILE_TYPE: {
+        statusCode: 400,
+        message: 'File type not allowed'
+    },
+    FILE_TOO_LARGE: {
+        statusCode: 400,
+        message: 'File exceeds the maximum allowed size'
+    },
+    INVALID_DOCUMENT_TYPE: {
+        statusCode: 400,
+        message: 'Invalid document type'
+    },
+    UNEXPECTED_FILE_FIELD: {
+        statusCode: 400,
+        message: 'Unexpected file field'
+    },
+    FILE_UPLOAD_ERROR: {
+        statusCode: 500,
+        message: 'Error uploading file'
+    },
 })

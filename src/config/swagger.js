@@ -1,6 +1,6 @@
 import swaggerJSDoc from "swagger-jsdoc"
 import { config } from "./env.config.js"
-import { USER_ROLES, PRODUCT_STATE, ORDER_STATUS, ORDER_PRIORITY, DELIVERY_STATUS } from "../utils/constants.js"
+import { USER_ROLES, PRODUCT_STATE, ORDER_STATUS, ORDER_PRIORITY, DELIVERY_STATUS, DOCUMENT_TYPE } from "../utils/constants.js"
 import { ERROR_CODES } from "../errors/error-codes.js"
 
 const schemas = {
@@ -20,7 +20,11 @@ const schemas = {
             last_name: { type: 'string', example: 'Lopez'},
             email: { type: 'string', format: 'email', example: 'tomaslopez@example.com'},
             role: { type: 'string', enum: Object.values(USER_ROLES), example: 'user'},
-        }
+        },
+        documents: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/UserDocument' }
+        },
     },
     UserCreateRequest: {
         type: 'object',
@@ -257,7 +261,11 @@ const schemas = {
             estimated_delivery: { type: 'string', format: 'date-time'},
             createdAt: { type: 'string', format: 'date-time'},
             updatedAt: { type: 'string', format: 'date-time'},
-        }
+        },
+        receipts: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/DeliveryReceipt' }
+        },
     },
     DeliveryCreateRequest: {
         type: 'object',
@@ -278,7 +286,47 @@ const schemas = {
             address: { type: 'string', example: '742 Evergreen Terrace'},
             estimated_delivery: { type: 'string', format: 'date-time'},
         }
-    }
+    },
+    UserDocument: {
+        type: 'object',
+        properties: {
+            _id: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0' },
+            original_name: { type: 'string', example: 'dni_frente.jpg' },
+            generated_name: { type: 'string', example: '1735689600000-dni_frente.jpg' },
+            path: { type: 'string', example: 'uploads/users/1735689600000-dni_frente.jpg' },
+            mimetype: { type: 'string', example: 'image/jpeg' },
+            size: { type: 'integer', example: 204800, description: 'Size in bytes' },
+            document_type: { type: 'string', enum: Object.values(DOCUMENT_TYPE), example: 'id_card' },
+            uploaded_at: { type: 'string', format: 'date-time' },
+        }
+    },
+    UploadUserDocumentRequest: {
+        type: 'object',
+        required: ['document', 'document_type'],
+        properties: {
+            document: { type: 'string', format: 'binary', description: 'File to upload (PDF, JPG or PNG only). Max size: 5MB.' },
+            document_type: { type: 'string', enum: Object.values(DOCUMENT_TYPE), example: 'id_card' },
+        }
+    },
+    DeliveryReceipt: {
+        type: 'object',
+        properties: {
+            _id: { type: 'string', example: '64a2f2e5c4b4d5e6f8g8h9i0' },
+            original_name: { type: 'string', example: 'remito_firmado.pdf' },
+            generated_name: { type: 'string', example: '1735689600000-remito_firmado.pdf' },
+            path: { type: 'string', example: 'uploads/delivery-receipts/1735689600000-remito_firmado.pdf' },
+            mimetype: { type: 'string', example: 'application/pdf' },
+            size: { type: 'integer', example: 512000, description: 'Size in bytes' },
+            uploaded_at: { type: 'string', format: 'date-time' },
+        }
+    },
+    UploadDeliveryReceiptRequest: {
+        type: 'object',
+        required: ['receipt'],
+        properties: {
+            receipt: { type: 'string', format: 'binary', description: 'Receipt file to upload (PDF, JPG or PNG only). Max size: 5MB.' },
+        }
+    },
 }
 
 const responses = {
@@ -660,7 +708,58 @@ const responses = {
             }
         }
     },
-
+    UserDocumentUploadedResponse: {
+        description: 'Response after successfully uploading and associating a user document',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/User' }
+            }
+        }
+    },
+    DeliveryReceiptUploadedResponse: {
+        description: 'Response after successfully uploading and associating a delivery receipt',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/Delivery' }
+            }
+        }
+    },
+    FileRequiredResponse: {
+        description: 'No file was provided in the request',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: { status: 'error', error: 'FILE_REQUIRED', message: 'A file is required' }
+            }
+        }
+    },
+    InvalidFileTypeResponse: {
+        description: 'The uploaded file type is not among the allowed types (PDF, JPG, PNG)',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: { status: 'error', error: 'INVALID_FILE_TYPE', message: 'File type not allowed' }
+            }
+        }
+    },
+    FileTooLargeResponse: {
+        description: 'The uploaded file exceeds the maximum allowed size (5MB)',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: { status: 'error', error: 'FILE_TOO_LARGE', message: 'File exceeds the maximum allowed size' }
+            }
+        }
+    },
+    InvalidDocumentTypeResponse: {
+        description: 'document_type is missing or not one of the allowed values',
+        content: {
+            'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+                example: { status: 'error', error: 'INVALID_DOCUMENT_TYPE', message: 'Invalid document type' }
+            }
+        }
+    },
 }
 
 const parameters = {

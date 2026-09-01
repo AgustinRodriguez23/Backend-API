@@ -1,6 +1,10 @@
 import CustomError from "../errors/custom.error.js"
 import UserService from "../services/user.service.js"
 
+import logger from "../config/logger.js"
+import { deleteFileIfExists } from "../utils/file.utils.js"
+import { DOCUMENT_TYPE } from "../utils/constants.js"
+
 class UserController {
 
     static async getUsers(req, res, next) {
@@ -54,6 +58,35 @@ class UserController {
             await UserService.remove(id)
             res.status(200).json({ statusCode: 200, message: 'User deleted' })
         } catch (error) {
+            next(error)
+        }
+    }
+
+    static async uploadUserDocument(req, res, next) {
+        try {
+            const { id } = req.params
+            const { document_type } = req.body
+
+            if (!Object.values(DOCUMENT_TYPE).includes(document_type)) {
+                throw new CustomError('INVALID_DOCUMENT_TYPE')
+            }
+
+            const documentData = {
+                original_name: req.file.originalname,
+                generated_name: req.file.filename,
+                path: req.file.path,
+                mimetype: req.file.mimetype,
+                size: req.file.size,
+                document_type,
+                uploaded_at: new Date()
+            }
+
+            const updatedUser = await UserService.addDocument(id, documentData)
+
+            logger.info(`Document (${document_type}) uploaded successfully for user ${id}`)
+            res.status(201).json(updatedUser)
+        } catch (error) {
+            if (req.file) await deleteFileIfExists(req.file.path)
             next(error)
         }
     }
