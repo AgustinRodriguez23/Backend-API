@@ -77,6 +77,17 @@ describe("Uploads endpoints", function () {
 
             expectErrorResponse(response, 404, "USER_NOT_FOUND")
         })
+
+        it("debe fallar con 400 si el archivo supera el tamaño máximo permitido", async function () {
+            const oversizedBuffer = Buffer.alloc(6 * 1024 * 1024) // 6MB, supera el límite de 5MB
+
+            const response = await request
+                .post(`/api/users/${this.user._id}/documents`)
+                .field("document_type", "id_card")
+                .attach("document", oversizedBuffer, { filename: "oversized.jpg", contentType: "image/jpeg" })
+
+            expectErrorResponse(response, 400, "FILE_TOO_LARGE")
+        })
     })
 
     describe("POST /api/deliveries/:id/receipts", function () {
