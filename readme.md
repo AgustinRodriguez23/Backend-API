@@ -1,25 +1,43 @@
-## Carga de archivos (Módulo 7)
+## Producción y Docker
 
-### Herramientas
-- **Multer** — manejo de `multipart/form-data`, configuración centralizada en `src/config/multer.js` (storage, tipos permitidos, tamaño máximo), separada de los routers.
+### Variables de entorno
+| Variable | Requerida | Descripción |
+|----------|:---:|---|
+| `PORT` | Sí | Puerto en el que corre la API |
+| `NODE_ENV` | Sí | `development`, `test` o `production` |
+| `MONGODB_URI` | Sí | Cadena de conexión a MongoDB |
+| `LOG_LEVEL` | No | Nivel de logs de Winston (`debug` en dev, `info` en prod por default) |
 
-### Estructura de carpetas
+Cada entorno usa su propio archivo: `.env` (desarrollo), `.env.test` (testing), `.env.production` (producción). Ninguno se sube al repo — guiate por `.env.example` para saber qué completar.
 
-uploads/
-users/ ← documentos de usuario (DNI, licencia, comprobante de domicilio)
-delivery-receipts/ ← comprobantes de entrega
+### Correr la API localmente
+```bash
+npm install
+npm run dev
+```
 
-Los archivos subidos **no se versionan** (`uploads/*` está en `.gitignore`); en la base solo se guardan sus metadatos (nombre original, nombre generado, ruta, tipo, tamaño, fecha de carga y, para documentos de usuario, el tipo de documento).
+### Correr los tests
+```bash
+npm test
+```
+Requiere MongoDB corriendo localmente y `.env.test` configurado (ver sección de Testing más arriba).
 
-### Endpoints
+### Acceder a Swagger
+Con la API corriendo: `http://localhost:<PORT>/api/docs`
 
-| Método | Ruta | Campo de archivo | Campos adicionales |
-|--------|------|-------------------|----------------------|
-| `POST` | `/api/users/:id/documents` | `document` | `document_type` (`id_card`, `driver_license`, `proof_of_address`, `other`) |
-| `POST` | `/api/deliveries/:id/receipts` | `receipt` | — |
+### Construir la imagen de Docker
+```bash
+docker build -t shipnow-api .
+```
 
-**Restricciones:** tipos aceptados `application/pdf`, `image/jpeg`, `image/png` — tamaño máximo 5MB.
+### Ejecutar el contenedor
+```bash
+docker run -p 8080:8080 --env-file .env.production shipnow-api
+```
+La API queda disponible en `http://localhost:8080`. Si tu MongoDB corre en tu máquina local (no en un contenedor), usá `host.docker.internal` en vez de `localhost`/`127.0.0.1` dentro de `MONGODB_URI`.
 
-**Errores específicos:** `FILE_REQUIRED` (400), `INVALID_FILE_TYPE` (400), `FILE_TOO_LARGE` (400), `INVALID_DOCUMENT_TYPE` (400), además de los `USER_NOT_FOUND` / `DELIVERY_NOT_FOUND` (404) ya existentes cuando la entidad no existe.
+### Archivos que no deben subirse al repo
+`node_modules`, `.env`, `.env.test`, `.env.production`, `logs/`, `uploads/` (excepto `.gitkeep`), `coverage/` — todos cubiertos por `.gitignore` y `.dockerignore`.
 
-Documentados en Swagger (`/api/docs`) como `multipart/form-data`, con tests funcionales en `test/routes/uploads.routes.test.js`.
+### Logs y uploads
+Los logs se generan localmente en `logs/` (rotación diaria vía Winston) y nunca se commitean. Los archivos subidos por los usuarios (documentos, comprobantes) se guardan en `uploads/`, tampoco se versionan — en base solo se persisten sus metadatos, nunca el archivo en sí.

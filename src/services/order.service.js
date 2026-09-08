@@ -2,16 +2,18 @@ import OrderRepository from "../repositories/order.repository.js"
 import ProductModel from "../models/product.model.js"
 import CustomError from "../errors/custom.error.js"
 
+import { normalizePagination } from "../utils/pagination.js"
+
 class OrderService {
-    static async getAll({ page = 1, pageSize = 20, status, priority } = {}) {
+
+    static async getAll({ page, pageSize, status, priority } = {}) {
+        const { pageSize: safePageSize, skip } = normalizePagination({ page, pageSize })
+
         const filter = {}
         if (status) filter.status = status
         if (priority) filter.priority = priority
 
-        return await OrderRepository.find(filter, {
-            limit: pageSize,
-            skip: (page - 1) * pageSize
-        })
+        return await OrderRepository.find(filter, { limit: safePageSize, skip })
     }
 
     static async getById(id) {

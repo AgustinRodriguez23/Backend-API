@@ -1,8 +1,11 @@
 import dotenv from "dotenv"
 
-const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
-dotenv.config({ path: envFile })
-
+const ENV_FILES = {
+    test: '.env.test',
+    production: '.env.production',
+}
+const envFile = ENV_FILES[process.env.NODE_ENV] ?? '.env'
+dotenv.config({ path: envFile, override: true })
 
 const REQUIRED_ENV_VARS = ['PORT', 'NODE_ENV', 'MONGODB_URI']
 
@@ -16,4 +19,5 @@ export const config = {
     PORT: process.env.PORT,
     MONGODB_URI: process.env.MONGODB_URI,
     NODE_ENV: process.env.NODE_ENV,
+    LOG_LEVEL: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
 }

@@ -2,16 +2,17 @@ import bcrypt from "bcrypt"
 
 import UserRepository from "../repositories/user.repository.js"
 import CustomError from "../errors/custom.error.js"
+import { normalizePagination } from "../utils/pagination.js"
 
 class UserService {
-    static async getAll({ page = 1, pageSize = 20, role } = {}) {
+    
+    static async getAll({ page, pageSize, role } = {}) {
+        const { pageSize: safePageSize, skip } = normalizePagination({ page, pageSize })
+
         const filter = {}
         if (role) filter.role = role
 
-        return await UserRepository.find(filter, {
-            limit: pageSize,
-            skip: (page - 1) * pageSize
-        })
+        return await UserRepository.find(filter, { limit: safePageSize, skip })
     }
 
     static async getById(id) {

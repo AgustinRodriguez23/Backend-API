@@ -1,17 +1,19 @@
 import DeliveryRepository from "../repositories/delivery.repository.js"
 import OrderModel from "../models/order.model.js"
 import CustomError from "../errors/custom.error.js"
+
 import { ORDER_STATUS } from "../utils/constants.js"
+import { normalizePagination } from "../utils/pagination.js"
 
 class DeliveryService {
-    static async getAll({ page = 1, pageSize = 20, status } = {}) {
+    
+    static async getAll({ page, pageSize, status } = {}) {
+        const { pageSize: safePageSize, skip } = normalizePagination({ page, pageSize })
+
         const filter = {}
         if (status) filter.status = status
 
-        return await DeliveryRepository.find(filter, {
-            limit: pageSize,
-            skip: (page - 1) * pageSize
-        })
+        return await DeliveryRepository.find(filter, { limit: safePageSize, skip })
     }
 
     static async getById(id) {

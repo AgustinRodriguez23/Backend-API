@@ -49,7 +49,7 @@ const fileFormat = winston.format.combine(
 
 
 const logger = winston.createLogger({
-    level: config.NODE_ENV === 'production' ? 'info' : 'debug',
+    level: config.LOG_LEVEL, 
     levels: customLevels.levels,
     transports: [
         new winston.transports.Console({

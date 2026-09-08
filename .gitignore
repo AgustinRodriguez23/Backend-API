@@ -5,3 +5,5 @@ logs
 uploads/*
 !uploads/**/.gitkeep
 coverage
+.env.test
+.env.production

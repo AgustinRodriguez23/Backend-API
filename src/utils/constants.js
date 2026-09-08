@@ -46,3 +46,5 @@ export const ALLOWED_FILE_MIMETYPES = Object.freeze([
 ])
 
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MB
+
+export const LOG_LEVELS = Object.freeze(['fatal', 'error', 'warn', 'info', 'http', 'debug'])

@@ -2,19 +2,17 @@ import ProductRepository from "../repositories/product.repository.js";
 import CustomError from "../errors/custom.error.js";
 
 import { PRODUCT_STATE } from "../utils/constants.js";
+import { normalizePagination } from "../utils/pagination.js"
 
 class ProductService {
 
-    static async getAllProducts({ page = 1, pageSize = 20, category } = {}) {
-        const filter = {
-            state: { $ne: PRODUCT_STATE.OUT_OF_STOCK }
-        }
+    static async getAllProducts({ page, pageSize, category } = {}) {
+        const { pageSize: safePageSize, skip } = normalizePagination({ page, pageSize })
+
+        const filter = { state: { $ne: PRODUCT_STATE.OUT_OF_STOCK } }
         if (category) filter.category = category
 
-        return await ProductRepository.find(filter, {
-            limit: pageSize,
-            skip: (page - 1) * pageSize
-        })
+        return await ProductRepository.find(filter, { limit: safePageSize, skip })
     }
 
     static async getProductById(id) {
