@@ -106,7 +106,7 @@ Guiate por `.env.example` para saber qué completar en cada uno.
 ## Instalación
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/AgustinRodriguez23/Backend-API
 cd backend-api
 npm install
 cp .env.example .env
