@@ -166,6 +166,14 @@ Cubre usuarios, productos, pedidos, entregas, mocks, logger de prueba, health ch
 
 ## Docker
 
+### Dockerfile
+ 
+Usa `node:20-alpine` como imagen base (liviana). Copia primero `package*.json` e instala dependencias antes de copiar el resto del código, para aprovechar el cache de capas de Docker y evitar reinstalar en cada build si solo cambió código. Instala únicamente `dependencies` (`npm install --omit=dev`), dejando afuera de la imagen final las herramientas de testing (Mocha, Chai, Supertest, Faker). Expone el puerto `8080` y arranca la API con `npm start`.
+ 
+### .dockerignore
+ 
+Evita copiar al contexto de build lo que no debe viajar dentro de la imagen: `node_modules`, `.git`, los distintos `.env*`, `logs/`, `uploads/`, `coverage/`, la carpeta `test/` y archivos temporales. Esto mantiene la imagen liviana y evita filtrar configuración sensible o archivos de desarrollo.
+
 ### Construir la imagen
 
 ```bash
